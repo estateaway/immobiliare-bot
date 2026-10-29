@@ -1,7 +1,7 @@
 import time
 import urllib.parse
-import requests
 from bs4 import BeautifulSoup
+from curl_cffi import requests  # Emula un browser reale per bypassare Cloudflare
 
 TELEFONO = "+393755140886"
 API_KEY = "6433321"
@@ -22,21 +22,6 @@ COMUNI = {
     "Perinaldo": "https://www.immobiliare.it/vendita-case/perinaldo/",
 }
 
-# Headers avanzati per simulare un browser reale ed evitare il blocco 403
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,"
-        " like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    ),
-    "Accept": (
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
-    ),
-    "Accept-Language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-}
-
 
 def invia_whatsapp(testo):
   testo_encoded = urllib.parse.quote(testo)
@@ -46,19 +31,17 @@ def invia_whatsapp(testo):
 
 
 def scansiona_annunci():
-  print("🚀 Avvio scansione ottimizzata con headers di sicurezza...")
-
-  # Usiamo una sessione HTTP per mantenere i cookie di navigazione
-  session = requests.Session()
+  print("🚀 Avvio scansione con emulatore browser anti-blocco...")
 
   for comune, url in COMUNI.items():
     print(f"Controllo in corso per: {comune}...")
     try:
-      response = session.get(url, headers=HEADERS, timeout=15)
+      # impersonate="chrome" inganna i controlli di sicurezza del sito
+      response = requests.get(url, impersonate="chrome", timeout=15)
       print(f"Status ricevuto per {comune}: {response.status_code}")
 
       if response.status_code != 200:
-        print(f"⚠️ Saltato {comune} per protezione anti-bot (Codice)")
+        print(f"⚠️ Errore {response.status_code} per {comune}")
         continue
 
       soup = BeautifulSoup(response.text, "html.parser")
@@ -82,8 +65,7 @@ def scansiona_annunci():
         if invia_whatsapp(testo_notifica):
           print(f"✅ Notificata novità per {comune}")
 
-      # Pausa variabile per simulare un comportamento umano
-      time.sleep(4)
+      time.sleep(3)
 
     except Exception as e:
       print(f"❌ Errore di connessione per {comune}: {e}")
