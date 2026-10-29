@@ -2,9 +2,8 @@ name: Monitor Immobiliare
 
 on:
   schedule:
-    # Esegue il controllo ogni 6 ore in automatico
     - cron: '0 */6 * * *'
-  workflow_dispatch: # Ti permette anche di avviarlo manualmente quando vuoi con un click
+  workflow_dispatch:
 
 jobs:
   run-bot:
@@ -20,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests beautifulsoup4
+          pip install curl_cffi beautifulsoup4 requests
 
       - name: Run script
         run: |
