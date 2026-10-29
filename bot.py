@@ -1,25 +1,26 @@
 import time
 import urllib.parse
 from bs4 import BeautifulSoup
-from curl_cffi import requests  # Emula un browser reale per bypassare Cloudflare
+from curl_cffi import requests
 
 TELEFONO = "+393755140886"
 API_KEY = "6433321"
 
+# Link di ricerca specifici per Idealista nei tuoi comuni
 COMUNI = {
-    "Bordighera": "https://www.immobiliare.it/vendita-case/bordighera/",
-    "Ospedaletti": "https://www.immobiliare.it/vendita-case/ospedaletti/",
-    "Ventimiglia": "https://www.immobiliare.it/vendita-case/ventimiglia/",
-    "Sanremo": "https://www.immobiliare.it/vendita-case/sanremo/",
-    "Dolceacqua": "https://www.immobiliare.it/vendita-case/dolceacqua/",
-    "Vallebona": "https://www.immobiliare.it/vendita-case/vallebona/",
-    "Seborga": "https://www.immobiliare.it/vendita-case/seborga/",
+    "Bordighera": "https://www.idealista.it/vendita-case/bordighera-imperia/",
+    "Ospedaletti": "https://www.idealista.it/vendita-case/ospedaletti-imperia/",
+    "Ventimiglia": "https://www.idealista.it/vendita-case/ventimiglia-imperia/",
+    "Sanremo": "https://www.idealista.it/vendita-case/sanremo-imperia/",
+    "Dolceacqua": "https://www.idealista.it/vendita-case/dolceacqua-imperia/",
+    "Vallebona": "https://www.idealista.it/vendita-case/vallebona-imperia/",
+    "Seborga": "https://www.idealista.it/vendita-case/seborga-imperia/",
     "San Biagio della Cima": (
-        "https://www.immobiliare.it/vendita-case/san-biagio-della-cima/"
+        "https://www.idealista.it/vendita-case/san-biagio-della-cima-imperia/"
     ),
-    "Soldano": "https://www.immobiliare.it/vendita-case/soldano/",
-    "Apricale": "https://www.immobiliare.it/vendita-case/apricale/",
-    "Perinaldo": "https://www.immobiliare.it/vendita-case/perinaldo/",
+    "Soldano": "https://www.idealista.it/vendita-case/soldano-imperia/",
+    "Apricale": "https://www.idealista.it/vendita-case/apricale-imperia/",
+    "Perinaldo": "https://www.idealista.it/vendita-case/perinaldo-imperia/",
 }
 
 
@@ -31,12 +32,12 @@ def invia_whatsapp(testo):
 
 
 def scansiona_annunci():
-  print("🚀 Avvio scansione con emulatore browser anti-blocco...")
+  print("🚀 Avvio scansione su Idealista...")
 
   for comune, url in COMUNI.items():
     print(f"Controllo in corso per: {comune}...")
     try:
-      # impersonate="chrome" inganna i controlli di sicurezza del sito
+      # Richiesta con emulatore Chrome per Idealista
       response = requests.get(url, impersonate="chrome", timeout=15)
       print(f"Status ricevuto per {comune}: {response.status_code}")
 
@@ -45,18 +46,25 @@ def scansiona_annunci():
         continue
 
       soup = BeautifulSoup(response.text, "html.parser")
-      item = soup.find("div", class_="nd-list__item")
+      # Selettore degli annunci su Idealista
+      item = soup.find("article", class_="item")
 
       if item:
-        titolo_tag = item.find("a", class_="in-realEstateList__title")
-        prezzo_tag = item.find("div", class_="in-realEstateList__price")
+        titolo_tag = item.find("a", class_="item-link")
+        prezzo_tag = item.find("span", class_="item-price")
 
-        titolo = titolo_tag.text.strip() if titolo_tag else "Immobile residenziale"
-        prezzo = prezzo_tag.text.strip() if prezzo_tag else "Prezzo su richiesta"
+        titolo = (
+            titolo_tag.text.strip()
+            if titolo_tag
+            else "Immobile residenziale"
+        )
+        prezzo = (
+            prezzo_tag.text.strip() if prezzo_tag else "Prezzo su richiesta"
+        )
 
         testo_notifica = (
             f"🚨 ALERT IMMOBILIARE 🚨\n\n"
-            f"🌐 Sito: Immobiliare.it\n"
+            f"🌐 Sito: Idealista\n"
             f"📍 Zona: {comune}\n"
             f"🏠 Titolo: {titolo}\n"
             f"💰 Prezzo: {prezzo}"
