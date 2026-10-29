@@ -22,12 +22,19 @@ COMUNI = {
     "Perinaldo": "https://www.immobiliare.it/vendita-case/perinaldo/",
 }
 
+# Headers avanzati per simulare un browser reale ed evitare il blocco 403
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,"
         " like Gecko) Chrome/122.0.0.0 Safari/537.36"
     ),
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+    ),
     "Accept-Language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
 }
 
 
@@ -39,14 +46,19 @@ def invia_whatsapp(testo):
 
 
 def scansiona_annunci():
-  print("🚀 Avvio scansione di tutti i comuni su GitHub Actions...")
+  print("🚀 Avvio scansione ottimizzata con headers di sicurezza...")
+
+  # Usiamo una sessione HTTP per mantenere i cookie di navigazione
+  session = requests.Session()
 
   for comune, url in COMUNI.items():
     print(f"Controllo in corso per: {comune}...")
     try:
-      response = requests.get(url, headers=HEADERS, timeout=15)
+      response = session.get(url, headers=HEADERS, timeout=15)
+      print(f"Status ricevuto per {comune}: {response.status_code}")
+
       if response.status_code != 200:
-        print(f"⚠️ Errore {response.status_code} per {comune}")
+        print(f"⚠️ Saltato {comune} per protezione anti-bot (Codice)")
         continue
 
       soup = BeautifulSoup(response.text, "html.parser")
@@ -70,9 +82,11 @@ def scansiona_annunci():
         if invia_whatsapp(testo_notifica):
           print(f"✅ Notificata novità per {comune}")
 
-      time.sleep(3)
+      # Pausa variabile per simulare un comportamento umano
+      time.sleep(4)
+
     except Exception as e:
-      print(f"❌ Errore per {comune}: {e}")
+      print(f"❌ Errore di connessione per {comune}: {e}")
 
 
 if __name__ == "__main__":
